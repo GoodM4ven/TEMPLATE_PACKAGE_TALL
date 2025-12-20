@@ -141,6 +141,61 @@ function remove_readme_paragraphs(string $file): void
     );
 }
 
+function replace_readme_development_section(string $file): void
+{
+    $contents = file_get_contents($file);
+
+    $original = <<<'MD'
+## Development
+
+- Since the package is utilizing [Orchestra Testbench](https://packages.tools) for the testing environment, its configuration file [testbench.yaml](testbench.yaml) should be looked at.
+- Running the Laravel Boost MCP server is done with `./vendor/bin/testbench boost:mcp` instead of `php artisan boost:mcp` or optionally via VSC command prompts.
+  - Normally, VSC users should have their MCP client pointing at `./vendor/bin/testbench boost:mcp`. (Check [.vscode/mcp.json](.vscode/mcp.json))
+  - HOWEVER, I have consistent configuration in [`laravel-boost-mcp.sh`](./laravel-boost-mcp.sh) file to look for both application setup's boost as well as the package's. And that's why we're pointing to that Bash file to handle the redirection.
+
+### Codex MCP Connection
+
+If you're using ChatGPT Codex in VSC or whatever, make sure your `config.toml` has at least the following:
+
+```toml
+[mcp_servers.laravel-boost]
+command = "./laravel-boost-mcp.sh"
+```
+
+**I was only able to get it to work using the `@openai/cli` package ran via `npm`, and the VSC extension wan't able to establish a connection for some reason... Still, the VSC extension is very useful to ask when the environment is broken and retain full access to project files.**
+
+### Workbench Laravel Environment
+
+Keep in mind the following when using Workbench:
+  - Run `./vendor/bin/testbench` instead of `artisan` for Laravel commands; maybe you'd create also an system terminal alias for it, I use `bench`.
+    - Composer `scripts` listed in [composer.json](./composer.json) utilize it for the commands.
+    - After running `composer serve`, visit `http://localhost:8000` to see the demo page in action.
+
+### Testing
+
+```bash
+composer test
+```
+
+> [!NOTE]
+> For code coverage add `--coverage`, and for faster runs add `--parallel`.
+MD;
+
+    $replacement = <<<'MD'
+## Development
+
+This package was initiated based on my [Laravel package template](https://github.com/goodm4ven/PACKAGE_LARAVEL_anvil/blob/main/README.md#development) that is built on top of [Spatie's](https://github.com/spatie/package-skeleton-laravel). Make sure to read the docs for both.
+MD;
+
+    $updated = str_replace($original, $replacement, $contents);
+
+    if ($updated === $contents) {
+        return;
+    }
+
+    file_put_contents($file, $updated);
+}
+
 function safeUnlink(string $filename)
 {
     if (file_exists($filename) && is_file($filename)) {
@@ -365,6 +420,11 @@ foreach ($files as $file) {
         ':package_description' => $description,
     ]);
 
+    if (str_contains($file, 'README.md')) {
+        remove_readme_paragraphs($file);
+        replace_readme_development_section($file);
+    }
+
     match (true) {
         str_contains($file, determineSeparator('src/Skeleton.php')) => rename($file, determineSeparator('./src/'.$className.'.php')),
         str_contains($file, determineSeparator('src/SkeletonServiceProvider.php')) => rename($file, determineSeparator('./src/'.$className.'ServiceProvider.php')),
@@ -377,7 +437,6 @@ foreach ($files as $file) {
         str_contains($file, determineSeparator('resources/js/package-name.js')) => rename($file, determineSeparator('./resources/js/'.$packageSlug.'.js')),
         str_contains($file, determineSeparator('tests/Browser/SkeletonBrowserTest.php')) => rename($file, determineSeparator('./tests/Browser/'.$className.'BrowserTest.php')),
         str_contains($file, determineSeparator('tests/SkeletonTest.php')) => rename($file, determineSeparator('./tests/'.$className.'Test.php')),
-        str_contains($file, 'README.md') => remove_readme_paragraphs($file),
         str_contains($file, determineSeparator('config/package-name.php'))=> rename($file, determineSeparator('./config/'.$packageSlugWithoutPrefix.'.php')),
         str_contains($file, determineSeparator('resources/css/package-name.css'))=> rename($file, determineSeparator('./resources/css/'.$packageSlug.'.css')),
         str_contains($file, determineSeparator('resources/js/package-name.js'))=> rename($file, determineSeparator('./resources/js/'.$packageSlug.'.js')),

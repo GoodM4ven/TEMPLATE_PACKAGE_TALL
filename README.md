@@ -75,7 +75,7 @@ If you're using ChatGPT Codex in VSC or whatever, make sure your `config.toml` h
 command = "./laravel-boost-mcp.sh"
 ```
 
-**I was only able to get it to work using the `@openai/cli` package ran via `npm`, and the VSC extension wan't able to establish a connection for some reason...**
+**I was only able to get it to work using the `@openai/cli` package ran via `npm`, and the VSC extension wan't able to establish a connection for some reason... Still, the VSC extension is very useful to ask when the environment is broken and retain full access to project files.**
 
 ### Workbench Laravel Environment
 
