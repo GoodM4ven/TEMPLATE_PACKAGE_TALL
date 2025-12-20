@@ -11,11 +11,12 @@ workbench:
     - asset-publish # vendor:publish --tag=laravel-assets --force
     - create-sqlite-db
     - migrate:refresh
+    - storage:link
 
 dont-discover:
 
 providers:
-  - :vendor_name\Skeleton\SkeletonServiceProvider
+  - VendorName\Skeleton\SkeletonServiceProvider
 
 env:
   APP_URL: http://localhost:8000

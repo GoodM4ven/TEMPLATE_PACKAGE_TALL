@@ -430,11 +430,18 @@ foreach ($files as $file) {
     };
 }
 
+$directory = __DIR__;
+run("ln -sf {$directory}/AGENTS.md {$directory}/workbench/AGENTS.md 2>&1");
+run("ln -sf {$directory}/boost.json {$directory}/workbench/boost.json 2>&1");
+
 // * ======
 // * Extra
 // * ====
 
-confirm('Execute `composer install` to install backend package?') && run('composer install');
+if (confirm('Execute `composer install` to install backend package?')) {
+    run('composer install');
+    run('./vendor/bin/testbench storage:link');
+}
 
 confirm('Execute `npm install` to install frontend packages?') && run('npm install');
 
