@@ -33,16 +33,16 @@ function run(string $command): string
     return trim((string) shell_exec($command));
 }
 
-function str_after(string $subject, string $search): string
-{
-    $pos = strrpos($subject, $search);
+// function str_after(string $subject, string $search): string
+// {
+//     $pos = strrpos($subject, $search);
 
-    if ($pos === false) {
-        return $subject;
-    }
+//     if ($pos === false) {
+//         return $subject;
+//     }
 
-    return substr($subject, $pos + strlen($search));
-}
+//     return substr($subject, $pos + strlen($search));
+// }
 
 function slugify(string $subject): string
 {
@@ -104,42 +104,32 @@ function remove_prefix(string $prefix, string $content): string
     return $content;
 }
 
-function remove_composer_deps(array $names)
-{
-    $data = json_decode(file_get_contents(__DIR__.'/composer.json'), true);
+// function remove_composer_deps(array $names)
+// {
+//     $data = json_decode(file_get_contents(__DIR__.'/composer.json'), true);
 
-    foreach ($data['require-dev'] as $name => $version) {
-        if (in_array($name, $names, true)) {
-            unset($data['require-dev'][$name]);
-        }
-    }
+//     foreach ($data['require-dev'] as $name => $version) {
+//         if (in_array($name, $names, true)) {
+//             unset($data['require-dev'][$name]);
+//         }
+//     }
 
-    file_put_contents(__DIR__.'/composer.json', json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-}
+//     file_put_contents(__DIR__.'/composer.json', json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+// }
 
-function remove_composer_script($scriptName)
-{
-    $data = json_decode(file_get_contents(__DIR__.'/composer.json'), true);
+// function remove_composer_script($scriptName)
+// {
+//     $data = json_decode(file_get_contents(__DIR__.'/composer.json'), true);
 
-    foreach ($data['scripts'] as $name => $script) {
-        if ($scriptName === $name) {
-            unset($data['scripts'][$name]);
-            break;
-        }
-    }
+//     foreach ($data['scripts'] as $name => $script) {
+//         if ($scriptName === $name) {
+//             unset($data['scripts'][$name]);
+//             break;
+//         }
+//     }
 
-    file_put_contents(__DIR__.'/composer.json', json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-}
-
-function remove_readme_paragraphs(string $file): void
-{
-    $contents = file_get_contents($file);
-
-    file_put_contents(
-        $file,
-        preg_replace('/<!--delete-->.*<!--\/delete-->/s', '', $contents) ?: $contents
-    );
-}
+//     file_put_contents(__DIR__.'/composer.json', json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+// }
 
 function replace_readme_development_section(string $file): void
 {
@@ -196,12 +186,12 @@ MD;
     file_put_contents($file, $updated);
 }
 
-function safeUnlink(string $filename)
-{
-    if (file_exists($filename) && is_file($filename)) {
-        unlink($filename);
-    }
-}
+// function safeUnlink(string $filename)
+// {
+//     if (file_exists($filename) && is_file($filename)) {
+//         unlink($filename);
+//     }
+// }
 
 function determineSeparator(string $path): string
 {
@@ -329,6 +319,10 @@ function renameDirectory(string $from, string $to): void
     }
 }
 
+// * ============
+// * Questioning
+// * ==========
+
 $gitName = run('git config user.name');
 $authorName = ask('Author name', $gitName);
 
@@ -357,25 +351,12 @@ $className = ask('Class name', $className);
 $variableName = lcfirst($className);
 $description = ask('Package description', "This is my package {$packageSlug}");
 
-$usePhpStan = confirm('Enable PhpStan?', true);
-$useLaravelPint = confirm('Enable Laravel Pint?', true);
-$useDependabot = confirm('Enable Dependabot?', true);
-$useLaravelRay = confirm('Use Ray for debugging?', true);
-$useUpdateChangelogWorkflow = confirm('Use automatic changelog updater workflow?', true);
-
 writeln('------');
 writeln("Author     : {$authorName} ({$authorUsername}, {$authorEmail})");
 writeln("Vendor     : {$vendorName} ({$vendorSlug})");
 writeln("Package    : {$packageSlug} <{$description}>");
 writeln("Namespace  : {$vendorNamespace}\\{$className}");
 writeln("Class name : {$className}");
-writeln('---');
-writeln('Packages & Utilities');
-writeln('Use Laravel/Pint     : '.($useLaravelPint ? 'yes' : 'no'));
-writeln('Use Larastan/PhpStan : '.($usePhpStan ? 'yes' : 'no'));
-writeln('Use Dependabot       : '.($useDependabot ? 'yes' : 'no'));
-writeln('Use Ray App          : '.($useLaravelRay ? 'yes' : 'no'));
-writeln('Use Auto-Changelog   : '.($useUpdateChangelogWorkflow ? 'yes' : 'no'));
 writeln('------');
 
 writeln('This script will replace the above values in all relevant files in the project directory.');
@@ -383,6 +364,10 @@ writeln('This script will replace the above values in all relevant files in the 
 if (! confirm('Modify files?', true)) {
     exit(1);
 }
+
+// * ===========
+// * Processing
+// * =========
 
 // Rename package-name directories first
 renameDirectory(
@@ -421,7 +406,6 @@ foreach ($files as $file) {
     ]);
 
     if (str_contains($file, 'README.md')) {
-        remove_readme_paragraphs($file);
         replace_readme_development_section($file);
     }
 
@@ -446,38 +430,9 @@ foreach ($files as $file) {
     };
 }
 
-if (! $useLaravelPint) {
-    safeUnlink(__DIR__.'/.github/workflows/fix-php-code-style-issues.yml');
-    safeUnlink(__DIR__.'/pint.json');
-}
-
-if (! $usePhpStan) {
-    safeUnlink(__DIR__.'/phpstan.neon.dist');
-    safeUnlink(__DIR__.'/phpstan-baseline.neon');
-    safeUnlink(__DIR__.'/.github/workflows/phpstan.yml');
-
-    remove_composer_deps([
-        'phpstan/extension-installer',
-        'phpstan/phpstan-deprecation-rules',
-        'phpstan/phpstan-phpunit',
-        'larastan/larastan',
-    ]);
-
-    remove_composer_script('phpstan');
-}
-
-if (! $useDependabot) {
-    safeUnlink(__DIR__.'/.github/dependabot.yml');
-    safeUnlink(__DIR__.'/.github/workflows/dependabot-auto-merge.yml');
-}
-
-if (! $useLaravelRay) {
-    remove_composer_deps(['spatie/laravel-ray']);
-}
-
-if (! $useUpdateChangelogWorkflow) {
-    safeUnlink(__DIR__.'/.github/workflows/update-changelog.yml');
-}
+// * ======
+// * Extra
+// * ====
 
 confirm('Execute `composer install` to install backend package?') && run('composer install');
 
