@@ -63,14 +63,36 @@ function replace_in_file(string $file, array $replacements): void
 {
     $contents = file_get_contents($file);
 
-    file_put_contents(
-        $file,
-        str_replace(
-            array_keys($replacements),
-            array_values($replacements),
+    // Protect strings that must NOT be replaced
+    $protected = [
+        'package:purge-skeleton',
+    ];
+
+    foreach ($protected as $i => $value) {
+        $contents = str_replace(
+            $value,
+            "__PROTECTED_{$i}__",
             $contents
-        )
+        );
+    }
+
+    // Perform normal replacements
+    $contents = str_replace(
+        array_keys($replacements),
+        array_values($replacements),
+        $contents
     );
+
+    // Restore protected strings
+    foreach ($protected as $i => $value) {
+        $contents = str_replace(
+            "__PROTECTED_{$i}__",
+            $value,
+            $contents
+        );
+    }
+
+    file_put_contents($file, $contents);
 }
 
 function remove_prefix(string $prefix, string $content): string
@@ -245,6 +267,13 @@ function guessGitHubVendorInfo($authorName, $username): array
     return [$response->name ?? $authorName, $response->login ?? $username];
 }
 
+function renameDirectory(string $from, string $to): void
+{
+    if (is_dir($from) && ! is_dir($to)) {
+        rename($from, $to);
+    }
+}
+
 $gitName = run('git config user.name');
 $authorName = ask('Author name', $gitName);
 
@@ -300,7 +329,23 @@ if (! confirm('Modify files?', true)) {
     exit(1);
 }
 
+// Rename package-name directories first
+renameDirectory(
+    __DIR__ . '/workbench/public/vendor/package-name',
+    __DIR__ . '/workbench/public/vendor/' . $packageSlug,
+);
+
 $files = (str_starts_with(strtoupper(PHP_OS), 'WIN') ? replaceForWindows() : replaceForAllOtherOSes());
+$additionalFiles = array_filter([
+    __DIR__.'/config/package-name.php',
+    __DIR__.'/resources/css/package-name.css',
+    __DIR__.'/resources/js/package-name.js',
+    __DIR__.'/tests/Browser/SkeletonBrowserTest.php',
+    __DIR__.'/tests/SkeletonTest.php',
+    __DIR__.'/workbench/public/vendor/'.$packageSlug.'/package-name.css',
+    __DIR__.'/workbench/public/vendor/'.$packageSlug.'/package-name.js',
+], 'file_exists');
+$files = array_values(array_unique(array_merge($files, $additionalFiles)));
 
 foreach ($files as $file) {
     replace_in_file($file, [
@@ -325,9 +370,19 @@ foreach ($files as $file) {
         str_contains($file, determineSeparator('src/SkeletonServiceProvider.php')) => rename($file, determineSeparator('./src/'.$className.'ServiceProvider.php')),
         str_contains($file, determineSeparator('src/Facades/Skeleton.php')) => rename($file, determineSeparator('./src/Facades/'.$className.'.php')),
         str_contains($file, determineSeparator('src/Commands/SkeletonCommand.php')) => rename($file, determineSeparator('./src/Commands/'.$className.'Command.php')),
+        str_contains($file, determineSeparator('src/Concerns/SkeletonConcern.php')) => rename($file, determineSeparator('./src/Concerns/'.$className.'Concern.php')),
+        str_contains($file, determineSeparator('src/Concerns/Skeleton.php')) => rename($file, determineSeparator('./src/Concerns/'.$className.'.php')),
         str_contains($file, determineSeparator('database/migrations/create_skeleton_table.php.stub')) => rename($file, determineSeparator('./database/migrations/create_'.title_snake($packageSlugWithoutPrefix).'_table.php.stub')),
-        str_contains($file, determineSeparator('config/skeleton.php')) => rename($file, determineSeparator('./config/'.$packageSlugWithoutPrefix.'.php')),
+        str_contains($file, determineSeparator('resources/css/package-name.css')) => rename($file, determineSeparator('./resources/css/'.$packageSlug.'.css')),
+        str_contains($file, determineSeparator('resources/js/package-name.js')) => rename($file, determineSeparator('./resources/js/'.$packageSlug.'.js')),
+        str_contains($file, determineSeparator('tests/Browser/SkeletonBrowserTest.php')) => rename($file, determineSeparator('./tests/Browser/'.$className.'BrowserTest.php')),
+        str_contains($file, determineSeparator('tests/SkeletonTest.php')) => rename($file, determineSeparator('./tests/'.$className.'Test.php')),
         str_contains($file, 'README.md') => remove_readme_paragraphs($file),
+        str_contains($file, determineSeparator('config/package-name.php'))=> rename($file, determineSeparator('./config/'.$packageSlugWithoutPrefix.'.php')),
+        str_contains($file, determineSeparator('resources/css/package-name.css'))=> rename($file, determineSeparator('./resources/css/'.$packageSlug.'.css')),
+        str_contains($file, determineSeparator('resources/js/package-name.js'))=> rename($file, determineSeparator('./resources/js/'.$packageSlug.'.js')),
+        str_contains($file, determineSeparator('workbench/public/vendor/'.$packageSlug.'/package-name.css')) => rename($file, determineSeparator('./workbench/public/vendor/'.$packageSlug.'/'.$packageSlug.'.css')),
+        str_contains($file, determineSeparator('workbench/public/vendor/'.$packageSlug.'/package-name.js')) => rename($file, determineSeparator('./workbench/public/vendor/'.$packageSlug.'/'.$packageSlug.'.js')),
         default => [],
     };
 }
@@ -365,6 +420,10 @@ if (! $useUpdateChangelogWorkflow) {
     safeUnlink(__DIR__.'/.github/workflows/update-changelog.yml');
 }
 
-confirm('Execute `composer install` and run tests?') && run('composer install && composer test');
+confirm('Execute `composer install` to install backend package?') && run('composer install');
+
+confirm('Execute `npm install` to install frontend packages?') && run('npm install');
+
+confirm('Execute `composer green` to double check everything is okay now?') && run('composer green');
 
 confirm('Let this script delete itself?', true) && unlink(__FILE__);

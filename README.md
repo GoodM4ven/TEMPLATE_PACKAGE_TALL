@@ -1,93 +1,108 @@
-# :package_description
+<div align="center">بسم الله الرحمن الرحيم</div>
+<div align="left">
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/:vendor_slug/:package_slug.svg?style=flat-square)](https://packagist.org/packages/:vendor_slug/:package_slug)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/:vendor_slug/:package_slug/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/:vendor_slug/:package_slug/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/:vendor_slug/:package_slug/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/:vendor_slug/:package_slug/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/:vendor_slug/:package_slug.svg?style=flat-square)](https://packagist.org/packages/:vendor_slug/:package_slug)
-<!--delete-->
----
-This repo can be used to scaffold a Laravel package. Follow these steps to get started:
+# :package_name
 
-1. Press the "Use this template" button at the top of this repo to create a new repo with the contents of this skeleton.
-2. Run "php ./configure.php" to run a script that will replace all placeholders throughout all the files.
-3. Have fun creating your package.
-4. If you need help creating a package, consider picking up our <a href="https://laravelpackage.training">Laravel Package Training</a> video course.
----
-<!--/delete-->
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/:vendor_slug/:package_slug.svg?style=for-the-badge&color=gray)](https://packagist.org/packages/:vendor_slug/:package_slug)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/:vendor_slug/:package_slug/pest.yml?branch=main&label=tests&style=for-the-badge&color=forestgreen)](https://github.com/:vendor_slug/:package_slug/actions?query=workflow%3Apest+branch%3Amain)
+[![Coverage Status](https://img.shields.io/codecov/c/github/:vendor_slug/:package_slug/main?style=for-the-badge&color=purple)](https://codecov.io/gh/:vendor_slug/:package_slug)
+[![Total Downloads](https://img.shields.io/packagist/dt/:vendor_slug/:package_slug.svg?style=for-the-badge&color=blue)](https://packagist.org/packages/:vendor_slug/:package_slug)
 
-## Support us
+<img src="./.github/images/banner.png">
 
-[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/:package_name.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/:package_name)
+:package_description
 
-We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
-
-We highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using. You'll find our address on [our contact page](https://spatie.be/about-us). We publish all received postcards on [our virtual postcard wall](https://spatie.be/open-source/postcards).
 
 ## Installation
 
-You can install the package via composer:
+Install the package with [`Composer`](https://getcomposer.org/):
 
 ```bash
 composer require :vendor_slug/:package_slug
 ```
 
-You can publish and run the migrations with:
+Publish the assets they are copied to `public/vendor/:package_slug`.
+
+```bash
+php artisan vendor:publish --tag=":package_slug-assets"
+```
+
+You can publish and run the migrations using:
 
 ```bash
 php artisan vendor:publish --tag=":package_slug-migrations"
 php artisan migrate
 ```
 
-You can publish the config file with:
+You may also publish additional resources to tailor the package to your project:
 
-```bash
-php artisan vendor:publish --tag=":package_slug-config"
-```
+- Config file to adjust defaults package settings:
+  ```bash
+  php artisan vendor:publish --tag=":package_slug-config"
+  ```
 
-This is the contents of the published config file:
+  - Check the current configurations in [here](config/:package_slug.php).
 
-```php
-return [
-];
-```
+- Views (if you need to override the Blade views):
+  ```bash
+  php artisan vendor:publish --tag=":package_slug-views"
+  ```
 
-Optionally, you can publish the views using
-
-```bash
-php artisan vendor:publish --tag=":package_slug-views"
-```
 
 ## Usage
 
 ```php
-$variable = new VendorName\Skeleton();
-echo $variable->echoPhrase('Hello, VendorName!');
+$instance = new \VendorName\Skeleton();
+echo $instance->somethingNonStatic();
+// OR
+\VendorName\Skeleton\Facades\Skeleton::somethingStatic();
 ```
 
-## Testing
+
+## Development
+
+- Since the package is utilizing [Orchestra Testbench](https://packages.tools) for the testing environment, its configuration file [testbench.yaml](testbench.yaml) should be looked at.
+- Running the Laravel Boost MCP server is done with `./vendor/bin/testbench boost:mcp` instead of `php artisan boost:mcp` or optionally via VSC command prompts.
+  - Normally, VSC users should have their MCP client pointing at `./vendor/bin/testbench boost:mcp`. (Check [.vscode/mcp.json](.vscode/mcp.json))
+  - HOWEVER, I have consistent configuration in [`laravel-boost-mcp.sh`](./laravel-boost-mcp.sh) file to look for both application setup's boost as well as the package's. And that's why we're pointing to that Bash file to handle the redirection.
+
+### Codex MCP Connection
+
+If you're using ChatGPT Codex in VSC or whatever, make sure your `config.toml` has at least the following:
+
+```toml
+[mcp_servers.laravel-boost]
+command = "./laravel-boost-mcp.sh"
+```
+
+**I was only able to get it to work using the `@openai/cli` package ran via `npm`, and the VSC extension wan't able to establish a connection for some reason...**
+
+### Workbench Laravel Environment
+
+Keep in mind the following when using Workbench:
+  - Run `./vendor/bin/testbench` instead of `artisan` for Laravel commands; maybe you'd create also an system terminal alias for it, I use `bench`.
+    - Composer `scripts` listed in [composer.json](./composer.json) utilize it for the commands.
+    - After running `composer serve`, visit `http://localhost:8000` to see the demo page in action.
+
+### Testing
 
 ```bash
 composer test
 ```
 
-## Changelog
+> [!NOTE]
+> For code coverage add `--coverage`, and for faster runs add `--parallel`.
 
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
 
-## Contributing
+## Support
 
-Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
+Support ongoing package maintenance as well as the development of **other projects** through [sponsorship](https://github.com/sponsors/GoodM4ven) or one-time [donations](https://github.com/sponsors/GoodM4ven?frequency=one-time&sponsor=GoodM4ven) if you prefer.
 
-## Security Vulnerabilities
-
-Please review [our security policy](../../security/policy) on how to report security vulnerabilities.
-
-## Credits
-
-- [:author_name](https://github.com/:author_username)
+### Credits
+- [ChatGPT & Codex](https://developers.openai.com/codex)
+- [GoodM4ven](https://github.com/GoodM4ven)
 - [All Contributors](../../contributors)
 
-## License
-
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+</div>
+<br>
+<div align="center">والحمد لله رب العالمين</div>

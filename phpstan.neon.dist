@@ -1,12 +1,19 @@
-includes:
-    - phpstan-baseline.neon
+includes: # Larastan is included
+    - phpstan-baseline.neon 
 
 parameters:
     level: 5
     paths:
-        - src
         - config
         - database
+        - src
+        - workbench
+    excludePaths:
+        analyse:
+            - workbench/bootstrap/cache
+            - workbench/storage
+            - workbench/vendor (?)
     tmpDir: build/phpstan
     checkOctaneCompatibility: true
     checkModelProperties: true
+    reportUnmatchedIgnoredErrors: false
