@@ -18,7 +18,7 @@ class TestCase extends Orchestra
 
     public function getEnvironmentSetUp($app)
     {
-        $this->setDatabaseTestingEssentials($app);
+        $this->setDatabaseTestingEssentials();
     }
 
     protected function defineDatabaseMigrations(): void
