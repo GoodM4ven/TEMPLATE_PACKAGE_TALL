@@ -27,13 +27,13 @@
 </head>
 
 <body class="antialiased">
-    <x-testereeno::tech-line :caption="'Laravel & AlpineJS'">
-        @include('testereeno::partials.hello-world')
-    </x-testereeno::tech-line>
+    <x-:package_slug::tech-line :caption="'Laravel & AlpineJS'">
+        @include(':package_slug::partials.hello-world')
+    </x-:package_slug::tech-line>
 
-    <x-testereeno::tech-line :caption="'Livewire & SQLite'">
-        @livewire('testereeno::countland')
-    </x-testereeno::tech-line>
+    <x-:package_slug::tech-line :caption="'Livewire & SQLite'">
+        @livewire(':package_slug::countland')
+    </x-:package_slug::tech-line>
 
     <!-- Bottom -->
     <div class="relative flex h-50">
