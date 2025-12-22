@@ -1,16 +1,12 @@
-<div class="bg-linear-to-br mx-auto my-10 grid select-none place-items-center overflow-hidden">
-    @once
-        @push('styles')
-            <link
-                href="{{ asset('vendor/:package_slug/:package_slug.css') }}"
-                rel="stylesheet"
-            >
-        @endpush
-        @push('body_scripts')
-            <script src="{{ asset('vendor/:package_slug/:package_slug.js') }}"></script>
-        @endpush
-    @endonce
+@pushOnce('injections')
+    <link
+        href="{{ asset('vendor/:package_slug/:package_slug.css') }}"
+        rel="stylesheet"
+    >
+    <script src="{{ asset('vendor/:package_slug/:package_slug.js') }}"></script>
+@endPushOnce
 
+<div class="bg-linear-to-br mx-auto my-10 grid select-none place-items-center overflow-hidden">
     <div
         class="w-full rounded-2xl border border-slate-200 bg-white/80 backdrop-blur-xl transition-all duration-500 ease-[cubic-bezier(.22,1,.36,1)] will-change-transform active:rounded-2xl"
         x-bind:class="open ? 'max-w-lg border-transparent' : 'max-w-md border-slate-200'"

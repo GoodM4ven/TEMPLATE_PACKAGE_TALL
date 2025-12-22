@@ -21,6 +21,7 @@
         "goodm4ven/anvil": "^1.0",
         "goodm4ven/tailwind-merge": "^1.0",
         "laravel/boost": "^1.8",
+        "livewire/livewire": "^3.7",
         "illuminate/contracts": "^11.0||^12.0",
         "illuminate/support": "^11.0||^12.0",
         "spatie/laravel-package-tools": "^1.16"
@@ -54,14 +55,19 @@
     },
     "scripts": {
         "post-autoload-dump": [
-            "@prepareback",
-            "@php vendor/bin/testbench boost:update --ansi"
+            "@prepareback"
         ],
-        "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
+        "sync-workbench-env": [
+            "@php workbench/sync-workbench-env.php"
+        ],
         "prepareback": [
-            "@clear",
+            "@php vendor/bin/testbench package:purge-skeleton --ansi",
+            "@sync-workbench-env",
+            "@php vendor/bin/testbench workbench:create-sqlite-db",
             "@php vendor/bin/testbench package:discover --ansi",
-            "@php vendor/bin/testbench optimize:clear"
+            "@php vendor/bin/testbench migrate:refresh --force",
+            "@php vendor/bin/testbench optimize:clear",
+            "@php vendor/bin/testbench workbench:build --ansi"
         ],
         "preparefront": [
             "npm run build"
@@ -76,10 +82,14 @@
             "@format",
             "@analyse"
         ],
-        "build": "@php vendor/bin/testbench workbench:build --ansi",
+        "publishfront": [
+            "@php vendor/bin/testbench vendor:publish --tag=:package_slug-assets --force"
+        ],
         "serve": [
             "Composer\\Config::disableProcessTimeout",
-            "@build",
+            "@prepareback",
+            "@preparefront",
+            "@publishfront",
             "@php vendor/bin/testbench serve --ansi"
         ],
         "test": "vendor/bin/pest",
@@ -88,6 +98,7 @@
         "green": [
             "@prepareback",
             "@preparefront",
+            "@publishfront",
             "@lint",
             "@test"
         ]

@@ -1,8 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&display=swap');
 @import 'tailwindcss' source(none);
 
-@source "../views/**/*.blade.php";
 @source "../js/**/*.js";
+@source "../views/**/*.blade.php";
 
 [x-cloak] {
     display: none !important;

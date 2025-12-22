@@ -61,6 +61,8 @@ echo $instance->somethingNonStatic();
 
 ## Development
 
+- Just like Spatie's, you shuold run [configure.php](./configure.php) script to rename the template to your package. 
+
 - Since the package is utilizing [Orchestra Testbench](https://packages.tools) for the testing environment, its configuration file [testbench.yaml](testbench.yaml) should be looked at.
 - Running the Laravel Boost MCP server is done with `./vendor/bin/testbench boost:mcp` instead of `php artisan boost:mcp` or optionally via VSC command prompts.
   - Normally, VSC users should have their MCP client pointing at `./vendor/bin/testbench boost:mcp`. (Check [.vscode/mcp.json](.vscode/mcp.json))
@@ -83,6 +85,8 @@ Keep in mind the following when using Workbench:
   - Run `./vendor/bin/testbench` instead of `artisan` for Laravel commands; maybe you'd create also an system terminal alias for it, I use `bench`.
     - Composer `scripts` listed in [composer.json](./composer.json) utilize it for the commands.
     - After running `composer serve`, visit `http://localhost:8000` to see the demo page in action.
+  - Service providers are managed through [workbench/bootstrap/providers.php](./workbench/bootstrap/providers.php) array.
+  - Environment variables are defined in [testbench.yaml](./testbench.yaml) file.
 
 ### Testing
 
@@ -108,6 +112,7 @@ Support ongoing package maintenance as well as the development of **other projec
 - [Composer](https://getcomposer.org)
 - [NPM](https://npmjs.com)
 - [ESLint](https://eslint.org)
+- [AnimeJS](https://animejs.com)
 - [PHP](https://php.net)
 - [TALL Stack Community](https://tallstack.dev)
 - [TailwindCSS](https://tailwindcss.com)

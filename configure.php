@@ -30,7 +30,18 @@ function writeln(string $line): void
 
 function run(string $command): string
 {
-    return trim((string) shell_exec($command));
+    $output = [];
+    $exitCode = 0;
+
+    exec($command . ' 2>&1', $output, $exitCode);
+
+    if ($exitCode !== 0) {
+        throw new RuntimeException(
+            "Command failed ({$exitCode}): {$command}\n" . implode("\n", $output)
+        );
+    }
+
+    return trim(implode("\n", $output));
 }
 
 // function str_after(string $subject, string $search): string
@@ -174,7 +185,7 @@ MD;
     $replacement = <<<'MD'
 ## Development
 
-This package was initiated based on my [Laravel package template](https://github.com/goodm4ven/PACKAGE_LARAVEL_anvil/blob/main/README.md#development) that is built on top of [Spatie's](https://github.com/spatie/package-skeleton-laravel). Make sure to read the docs for both.
+This package was initiated based on my [Laravel package template](https://github.com/goodm4ven/TEMPLATE_PACKAGE_TALL/blob/main/README.md#development) that is built on top of [Spatie's](https://github.com/spatie/package-skeleton-laravel). Make sure to read the docs for both.
 MD;
 
     $updated = str_replace($original, $replacement, $contents);
@@ -358,10 +369,11 @@ writeln("Package    : {$packageSlug} <{$description}>");
 writeln("Namespace  : {$vendorNamespace}\\{$className}");
 writeln("Class name : {$className}");
 writeln('------');
-
 writeln('This script will replace the above values in all relevant files in the project directory.');
+writeln('It will also initiate the backend packages setup via composer.');
+writeln('------');
 
-if (! confirm('Modify files?', true)) {
+if (! confirm('Ready?', true)) {
     exit(1);
 }
 
@@ -431,20 +443,40 @@ foreach ($files as $file) {
 }
 
 $directory = __DIR__;
+
 run("ln -sf {$directory}/AGENTS.md {$directory}/workbench/AGENTS.md 2>&1");
 run("ln -sf {$directory}/boost.json {$directory}/workbench/boost.json 2>&1");
 
-// * ======
-// * Extra
-// * ====
+// * ============
+// * Conditioned
+// * ==========
 
-if (confirm('Execute `composer install` to install backend package?')) {
+writeln('------');
+writeln('Installing via composer now...');
+
+try {
     run('composer install');
     run('./vendor/bin/testbench storage:link');
+    run("ln -sf {$directory}/vendor {$directory}/workbench/vendor 2>&1");
+} catch (\RuntimeException) {
+    writeln('------');
+    writeln('Installing via composer failed.');
+    writeln('IMPORTANT: Make sure to make system-links for vendor and storage directories.');
 }
 
-confirm('Execute `npm install` to install frontend packages?') && run('npm install');
+writeln('------');
+confirm('Do you want to run `npm install` to install frontend packages?') && (function() {
+    writeln('------');
+    writeln('Installing via npm now...');
+    run('npm install');
+})();
 
-confirm('Execute `composer green` to double check everything is okay now?') && run('composer green');
+writeln('------');
+confirm('What about running `composer green` to double check everything is okay now?') && (function() {
+    writeln('------');
+    writeln('Running the command now...');
+    run('composer green');
+})();
 
+writeln('------');
 confirm('Let this script delete itself?', true) && unlink(__FILE__);
