@@ -12,7 +12,7 @@ parameters:
         analyse:
             - workbench/bootstrap/cache
             - workbench/storage
-            - workbench/vendor (?)
+            - workbench/vendor
     tmpDir: build/phpstan
     checkOctaneCompatibility: true
     checkModelProperties: true
