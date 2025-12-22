@@ -142,12 +142,15 @@ function remove_prefix(string $prefix, string $content): string
 //     file_put_contents(__DIR__.'/composer.json', json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 // }
 
-function replace_readme_development_section(string $file): void
+function replace_readme_development_section(): void
 {
+    $file = 'README.md';
     $contents = file_get_contents($file);
 
     $original = <<<'MD'
 ## Development
+
+- Just like Spatie's, you shuold run [configure.php](./configure.php) script to rename the template to your package. 
 
 - Since the package is utilizing [Orchestra Testbench](https://packages.tools) for the testing environment, its configuration file [testbench.yaml](testbench.yaml) should be looked at.
 - Running the Laravel Boost MCP server is done with `./vendor/bin/testbench boost:mcp` instead of `php artisan boost:mcp` or optionally via VSC command prompts.
@@ -171,6 +174,8 @@ Keep in mind the following when using Workbench:
   - Run `./vendor/bin/testbench` instead of `artisan` for Laravel commands; maybe you'd create also an system terminal alias for it, I use `bench`.
     - Composer `scripts` listed in [composer.json](./composer.json) utilize it for the commands.
     - After running `composer serve`, visit `http://localhost:8000` to see the demo page in action.
+  - Service providers are managed through [workbench/bootstrap/providers.php](./workbench/bootstrap/providers.php) array.
+  - Environment variables are defined in [testbench.yaml](./testbench.yaml) file.
 
 ### Testing
 
@@ -188,9 +193,15 @@ MD;
 This package was initiated based on my [Laravel package template](https://github.com/goodm4ven/TEMPLATE_PACKAGE_TALL/blob/main/README.md#development) that is built on top of [Spatie's](https://github.com/spatie/package-skeleton-laravel). Make sure to read the docs for both.
 MD;
 
-    $updated = str_replace($original, $replacement, $contents);
+    $pattern = '/## Development\\n\\n.*?(?=\\n## [^\\n]+\\n|\\z)/s';
 
-    if ($updated === $contents) {
+    $updated = preg_replace($pattern, $replacement."\n\n", $contents, 1, $count);
+
+    if ($count === 0) {
+        $updated = str_replace($original, $replacement, $contents, $count);
+    }
+
+    if ($count === 0) {
         return;
     }
 
@@ -417,10 +428,6 @@ foreach ($files as $file) {
         ':package_description' => $description,
     ]);
 
-    if (str_contains($file, 'README.md')) {
-        replace_readme_development_section($file);
-    }
-
     match (true) {
         str_contains($file, determineSeparator('src/Skeleton.php')) => rename($file, determineSeparator('./src/'.$className.'.php')),
         str_contains($file, determineSeparator('src/SkeletonServiceProvider.php')) => rename($file, determineSeparator('./src/'.$className.'ServiceProvider.php')),
@@ -441,6 +448,8 @@ foreach ($files as $file) {
         default => [],
     };
 }
+
+replace_readme_development_section();
 
 $directory = __DIR__;
 
