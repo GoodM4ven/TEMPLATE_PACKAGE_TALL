@@ -1,15 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&display=swap');
-@import 'tailwindcss' source(none);
+@layer theme, base, components, utilities;
+
+@import 'tailwindcss/theme.css' layer(theme) theme(inline);
+@import 'tailwindcss/utilities.css' layer(utilities) source(none);
 
 @source "../js/**/*.js";
 @source "../views/**/*.blade.php";
 
 [x-cloak] {
     display: none !important;
-}
-
-@theme {
-    --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
 }
 
 @variant dark (&:where(.dark, .dark *));
